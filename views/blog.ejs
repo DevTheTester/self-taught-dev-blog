@@ -1,9 +1,10 @@
 <h1>Self Taught Blog</h1>
-//List of Blog Posts
+<h3><a href='blog/newpost'<a/>New Post</h3>
 <ul> 
 		<% posts.forEach(post => { %>
 		<li>
-			<h2><a href='/<%= post.id %>'<a/> <%= post.title %></h2>
+			<h2><a href='/blog/<%= post.id %>'<a/> <%= post.title %></h2>
 		</li>
 		<% }) %>
+		<li><h2><a href='/blog/999'<a/>Blog not found test</h2></li>
 </ul>
