@@ -19,6 +19,7 @@ app.set('layout', 'layout'); //Looks for layout.ejs in views
 
 // Set express layouts as the layouts we want to use? idek
 app.use(expressLayouts);
+app.use(express.urlencoded({ extended: true, limit: "2mb", parameterLimit: 5 }));
 
 /* ROUTES */
 
@@ -43,13 +44,36 @@ app.get('/blog', (req, res) => {
 	});
 });
 
+//Blog: Index>Post
+app.post('/blog', (req, res) => {
+	const { title, content } = req.body;
 
-//Blog: New
-app.get('/blog/newpost', (req, res) => {
-	res.render('new');
+	const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^w-]/g, '');
+	const createdAt = new Date().toISOString();
+
+	db.run(
+		`INSERT INTO posts (title, content, slug, createdAt) VALUES (?, ?, ?, ?)`,
+		[title, content, slug, createdAt],
+		function (err) {
+			if (err) {
+				console.error(err);
+				return res.status(500).send("Something went wrong.");
+			}
+		console.log(`${this.lastID}`);
+		res.redirect(`/blog/${this.lastID}`); // redirect to blog post after the post request
+
+		}
+	);
+
 });
 
-//Blog: Post
+
+//Blog: New
+app.get('/blog/new', (req, res) => {
+	res.render('new');
+});
+//Blog: Post 
+
 app.get('/blog/:id', (req, res) => {
 	db.get(`SELECT * FROM posts WHERE id = ? ORDER BY CreatedAt DESC`, [req.params.id], (err, row) => {
 		if (err) {
@@ -63,6 +87,17 @@ app.get('/blog/:id', (req, res) => {
 	});
 });
 
+//Blog: Post>POST/Delete
+app.post('/blog/:id/delete', (req, res) => {
+	db.run(`DELETE FROM posts WHERE id = ?`, [req.params.id], function (err) {
+		if (err) {
+			console.error(err);
+			return res.status(500).send('Failed to delete post.');
+		}
+		console.log(`Deleted post with ID ${req.params.id}`);
+		res.redirect('/blog');
+	});
+});
 
 app.listen(port, () => {
 	console.log(`Server listening on port ${port}`);
