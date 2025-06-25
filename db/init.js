@@ -12,4 +12,15 @@ db.serialize(() => {
 		)
 
 	`);
+	db.run(`
+		CREATE TABLE IF NOT EXISTS users (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			fname TEXT NOT NULL,
+			lname TEXT NOT NULL,
+			email TEXT NOT NULL,
+			password TEXT NOT NULL,
+			role TEXT NOT NULL,
+			createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+		)
+	`);
 });

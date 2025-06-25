@@ -4,6 +4,7 @@ const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
+const bcrypt = require('bcrypt');
 
 //Initializes an app object using express class
 const app = express();
@@ -31,6 +32,20 @@ app.get('/', (req, res) => {
 //About
 app.get('/about', (req, res) => {
 	res.render('about'); 
+});
+
+//Register
+app.get('/register', (req, res) => {
+	res.render('register');
+});
+
+//Register: Post
+app.post('/register', (req, res) => {
+	//Get form data from request
+	const { fname, lname, email, password } = req.body;
+	const data = `${fname}, ${lname}, ${email}, ${password}`
+	res.send(data);
+
 });
 
 //Blog: Index 
@@ -72,8 +87,8 @@ app.post('/blog', (req, res) => {
 app.get('/blog/new', (req, res) => {
 	res.render('new');
 });
-//Blog: Post 
 
+//Blog: Post 
 app.get('/blog/:id', (req, res) => {
 	db.get(`SELECT * FROM posts WHERE id = ? ORDER BY CreatedAt DESC`, [req.params.id], (err, row) => {
 		if (err) {
