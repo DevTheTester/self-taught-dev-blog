@@ -1,4 +1,4 @@
-const db = require('./index');
+const db = require('./db');
 
 db.serialize(() => {
 	//Create db table if it doesn't already exist
@@ -17,10 +17,12 @@ db.serialize(() => {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			fname TEXT NOT NULL,
 			lname TEXT NOT NULL,
-			email TEXT NOT NULL,
+			email TEXT NOT NULL UNIQUE,
 			password TEXT NOT NULL,
 			role TEXT NOT NULL,
 			createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 		)
 	`);
 });
+
+module.exports = db;

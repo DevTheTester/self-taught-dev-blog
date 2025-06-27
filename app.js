@@ -5,6 +5,8 @@ const expressLayouts = require('express-ejs-layouts');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
+const session = require('cookie-session');
+require('dotenv').config();
 
 //Initializes an app object using express class
 const app = express();
@@ -13,6 +15,7 @@ const db = new sqlite3.Database('./db/blog.db');
 
 // Defines port (Computer door to knock on)
 const port = 3000; 
+
 // Get system path or some shit Set ejs as the extension to use, and views as the views thing 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -21,6 +24,16 @@ app.set('layout', 'layout'); //Looks for layout.ejs in views
 // Set express layouts as the layouts we want to use? idek
 app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true, limit: "2mb", parameterLimit: 5 }));
+//Set up session config
+app.use(session({
+	secret: process.env.SESSION_SECRET,
+	resave: false,
+	saveUninitialized: false,
+	cookie: {
+		secure: false,
+		maxAge: 1000 * 60 * 60 * 30 // 30 Days
+	}
+}));
 
 /* ROUTES */
 
@@ -43,9 +56,30 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
 	//Get form data from request
 	const { fname, lname, email, password } = req.body;
-	const data = `${fname}, ${lname}, ${email}, ${password}`
-	res.send(data);
+	const role = 'user';
+	//Generate password hash and store in database
+	const hash = bcrypt.hashSync(password, 10);
+	db.run(
+		`INSERT INTO users (fname, lname, email, password, role) VALUES (?, ?, ?, ?, ?)`,
+		[fname, lname, email, hash, role],
+		function (err)	{
+		if (err){
+			console.log(err);
+			return res.status(500).send("Something went wrong.");
+		}
+			res.redirect('/');
+		}
+	);
+});
 
+//Login
+app.get('/login', (req, res) => {
+	res.render('login');
+});
+
+//Login>Post
+app.post('login', (req, res) => {
+	
 });
 
 //Blog: Index 
