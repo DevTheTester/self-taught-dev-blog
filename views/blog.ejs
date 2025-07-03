@@ -1,5 +1,7 @@
 <h1>Self Taught Blog</h1>
+<% if (user) { %>
 <h3><a href='blog/new'<a/>New Post</h3>
+<% }; %>
 <ul> 
 		<% posts.forEach(post => { %>
 		<li>

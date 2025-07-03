@@ -1,12 +1,13 @@
 //Imports express class from express
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
-const session = require('cookie-session');
-require('dotenv').config();
+const session = require('express-session');
+const {v4: uuidv4} = require('uuid');
 
 //Initializes an app object using express class
 const app = express();
@@ -26,14 +27,24 @@ app.use(expressLayouts);
 app.use(express.urlencoded({ extended: true, limit: "2mb", parameterLimit: 5 }));
 //Set up session config
 app.use(session({
+	genid: function(req){
+		const uuid = uuidv4();
+		console.log(uuid)
+		return uuid;
+	},
 	secret: process.env.SESSION_SECRET,
 	resave: false,
 	saveUninitialized: false,
 	cookie: {
 		secure: false,
-		maxAge: 1000 * 60 * 60 * 30 // 30 Days
+		maxAge: 1000 * 60 * 60 * 2 // 30 Days
 	}
 }));
+app.use((req, res, next) => {
+	// Make `user` available in templates
+	res.locals.user = req.session.userId || null;
+  	next();
+})
 
 /* ROUTES */
 
@@ -47,10 +58,12 @@ app.get('/about', (req, res) => {
 	res.render('about'); 
 });
 
+/* 
 //Register
 app.get('/register', (req, res) => {
 	res.render('register');
 });
+*/
 
 //Register: Post
 app.post('/register', (req, res) => {
@@ -73,12 +86,45 @@ app.post('/register', (req, res) => {
 });
 
 //Login
-app.get('/login', (req, res) => {
+app.get('/admin', (req, res) => {
 	res.render('login');
 });
 
 //Login>Post
-app.post('login', (req, res) => {
+app.post('/admin', (req, res) => {
+	//Get the request data
+	const { email, password } = req.body;
+	//See if you can find user row in db by the email 
+	db.get(`SELECT * FROM users WHERE email = ?`, [email], (err, row) => {
+		//If you failling get the data from db error 
+		if (err) {
+			console.log(err);
+			return res.status(500).send("Something went wrong.");
+		}
+		console.log(row);
+		if (!row){
+			console.log(`User not found ${email}`);
+			return res.status(401).send("No matching account found");
+		}
+		bcrypt.compare(password, row.password, (err, result) => {
+			if (err) {
+				console.log(err);
+				return res.status(500).send("Something went wrong.");
+			}
+			if (result){
+				console.log("Logged in Successfully")
+				//If they are the same then give the user the sessionID token 
+				req.session.userId = row.id;
+				console.log(req.session);
+				console.log("Logged in successfully redirect to index page");
+				res.redirect(`/`);
+			} else {
+				//If they aren't error
+				console.log('Login details incorrect');
+				return res.status(401).send("Login details incorrect");
+			}
+		})
+	});
 	
 });
 
