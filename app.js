@@ -5,8 +5,9 @@ const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
 const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
-const bcrypt = require('bcrypt');
 const session = require('express-session');
+var SQLiteStore = require('connect-sqlite3')(session);
+const bcrypt = require('bcrypt');
 const {v4: uuidv4} = require('uuid');
 
 //Initializes an app object using express class
@@ -29,15 +30,15 @@ app.use(express.urlencoded({ extended: true, limit: "2mb", parameterLimit: 5 }))
 app.use(session({
 	genid: function(req){
 		const uuid = uuidv4();
-		console.log(uuid)
 		return uuid;
 	},
+	store: new SQLiteStore,
 	secret: process.env.SESSION_SECRET,
 	resave: false,
 	saveUninitialized: false,
 	cookie: {
 		secure: false,
-		maxAge: 1000 * 60 * 60 * 2 // 30 Days
+		maxAge: 1000 * 60 * 60 * 30 // 30 Days
 	}
 }));
 app.use((req, res, next) => {
@@ -45,6 +46,13 @@ app.use((req, res, next) => {
 	res.locals.user = req.session.userId || null;
   	next();
 })
+
+function requireLogin(req, res, next) {
+	if (!req.session.userId){
+		return res.status(401).send("Unauthorized");
+	}
+	next();
+}
 
 /* ROUTES */
 
@@ -63,7 +71,6 @@ app.get('/about', (req, res) => {
 app.get('/register', (req, res) => {
 	res.render('register');
 });
-*/
 
 //Register: Post
 app.post('/register', (req, res) => {
@@ -84,6 +91,7 @@ app.post('/register', (req, res) => {
 		}
 	);
 });
+*/
 
 //Login
 app.get('/admin', (req, res) => {
@@ -143,7 +151,7 @@ app.get('/blog', (req, res) => {
 app.post('/blog', (req, res) => {
 	const { title, content } = req.body;
 
-	const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^w-]/g, '');
+	const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 	const createdAt = new Date().toISOString();
 
 	db.run(
@@ -164,11 +172,11 @@ app.post('/blog', (req, res) => {
 
 
 //Blog: New
-app.get('/blog/new', (req, res) => {
+app.get('/blog/new', requireLogin, (req, res) => {
 	res.render('new');
 });
 
-//Blog: Post 
+//Blog: Posts 
 app.get('/blog/:id', (req, res) => {
 	db.get(`SELECT * FROM posts WHERE id = ? ORDER BY CreatedAt DESC`, [req.params.id], (err, row) => {
 		if (err) {
@@ -183,7 +191,7 @@ app.get('/blog/:id', (req, res) => {
 });
 
 //Blog: Post>POST/Delete
-app.post('/blog/:id/delete', (req, res) => {
+app.post('/blog/:id/delete', requireLogin, (req, res) => {
 	db.run(`DELETE FROM posts WHERE id = ?`, [req.params.id], function (err) {
 		if (err) {
 			console.error(err);
