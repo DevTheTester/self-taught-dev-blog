@@ -9,6 +9,9 @@ const session = require('express-session');
 var SQLiteStore = require('connect-sqlite3')(session);
 const bcrypt = require('bcrypt');
 const {v4: uuidv4} = require('uuid');
+const MarkdownIt = require('markdown-it');
+const md = new MarkdownIt();
+
 
 //Initializes an app object using express class
 const app = express();
@@ -183,7 +186,8 @@ app.get('/blog/:id', (req, res) => {
 			res.status(500).send('Something went wrong');
 		} 
 		if (row) {
-			res.render('post', { post: row });
+			const htmlContent = md.render(row.content);
+			res.render('post', { post: row ,content: htmlContent});
 		} else {
 			res.status(404).send(`Post not found`);
 		}

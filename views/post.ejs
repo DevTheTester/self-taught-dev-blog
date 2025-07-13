@@ -1,6 +1,6 @@
 <h1><%= post.title %></h1>
 
-<p><%= post.content %></p>
+<p><%- content %></p>
 
 <% if (user) { %>
 <form action='/blog/<%= post.id %>/delete' method="POST" onsubmit="return confirm('Are you sure you want to delete this post?');">
