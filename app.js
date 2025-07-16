@@ -59,6 +59,12 @@ function requireLogin(req, res, next) {
 
 /* ROUTES */
 
+//Webhook Handler for deployments
+app.post('/deploy-4f93jd92hf', (req res) => {
+	console.log("Received github push payload")
+	res.status(200).send("Yeet");
+});
+
 //Index
 app.get('/', (req, res) => {
 	res.render('index'); 
