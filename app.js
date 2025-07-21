@@ -63,7 +63,7 @@ function requireLogin(req, res, next) {
 
 const SECRET = process.env.WEBHOOK_SECRET;
 //Webhook Handler for deployments
-app.post('/deploy-4f93jd92hf', express.json({type: 'application/json'}), (req, res) => {
+app.post('/deploy-4f93jd92hf', express.json({type: 'application/json'}), async (req, res) => {
 	//Verify the webhook is from github
 	try {
 		const secret = process.env.WEBHOOK_SECRET;
