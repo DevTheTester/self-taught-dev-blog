@@ -11,10 +11,12 @@ const bcrypt = require('bcrypt');
 const {v4: uuidv4} = require('uuid');
 const MarkdownIt = require('markdown-it');
 const md = new MarkdownIt();
+const { verifySignature } = require('./utils/verifySignature');
 
 
 //Initializes an app object using express class
 const app = express();
+
 //Initialize db
 const db = new sqlite3.Database('./db/blog.db');
 
@@ -59,9 +61,25 @@ function requireLogin(req, res, next) {
 
 /* ROUTES */
 
+const SECRET = process.env.WEBHOOK_SECRET;
 //Webhook Handler for deployments
-app.post('/deploy-4f93jd92hf', (req, res) => {
-	console.log("Received github push payload")
+app.post('/deploy-4f93jd92hf', express.json({type: 'application/json'}), (req, res) => {
+	//Verify the webhook is from github
+	try {
+		const secret = process.env.WEBHOOK_SECRET;
+		const signature = req.get(x-hub-signature-256);
+		const payload = req.body;
+
+		const valid = await verifySignature(secre, signature, payload);
+
+		//Testing = test in prod
+		if (!valid) {
+			console.log("This shit was not valid at all");
+		} else {
+			console.log("This shit is so valid bro");
+		}
+	}	
+	console.log("Received github push payload");
 	res.status(200).send("Yeet");
 });
 
@@ -75,7 +93,6 @@ app.get('/about', (req, res) => {
 	res.render('about'); 
 });
 
-/* 
 //Register
 app.get('/register', (req, res) => {
 	res.render('register');
@@ -100,7 +117,6 @@ app.post('/register', (req, res) => {
 		}
 	);
 });
-*/
 
 //Login
 app.get('/admin', (req, res) => {
