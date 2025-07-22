@@ -79,6 +79,7 @@ app.post('/deploy-4f93jd92hf', express.json({type: 'application/json'}), async (
 		} else {
 			console.log("This shit is so valid bro");
 		}
+	// If there's an unexpected error then show it
 	} catch (e) {
 		console.error(e);
 	}	
