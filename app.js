@@ -78,8 +78,8 @@ app.post('/deploy-4f93jd92hf', express.json({type: 'application/json'}), async (
 		} else {
 			console.log("This shit is so valid bro");
 		}
-	} catch {
-		console.error(error);
+	} catch (e) {
+		console.error(e);
 	}	
 	console.log("Received github push payload");
 	res.status(200).send("Yeet");
