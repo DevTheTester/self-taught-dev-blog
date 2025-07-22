@@ -52,6 +52,7 @@ app.use((req, res, next) => {
   	next();
 })
 
+// Checks if users session has been assigned to a userID
 function requireLogin(req, res, next) {
 	if (!req.session.userId){
 		return res.status(401).send("Unauthorized");
