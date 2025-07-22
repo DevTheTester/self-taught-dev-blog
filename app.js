@@ -68,7 +68,7 @@ app.post('/deploy-4f93jd92hf', express.json({type: 'application/json'}), async (
 	//Verify the webhook is from github
 	try {
 		const secret = process.env.WEBHOOK_SECRET;
-		const signature = req.get(x-hub-signature-256);
+		const signature = req.get('x-hub-signature-256');
 		const payload = req.body;
 
 		const valid = await verifySignature(secret, signature, payload);
