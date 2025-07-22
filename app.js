@@ -70,7 +70,7 @@ app.post('/deploy-4f93jd92hf', express.json({type: 'application/json'}), async (
 		const signature = req.get(x-hub-signature-256);
 		const payload = req.body;
 
-		const valid = await verifySignature(secre, signature, payload);
+		const valid = await verifySignature(secret, signature, payload);
 
 		//Testing = test in prod
 		if (!valid) {
@@ -78,6 +78,8 @@ app.post('/deploy-4f93jd92hf', express.json({type: 'application/json'}), async (
 		} else {
 			console.log("This shit is so valid bro");
 		}
+	} catch {
+		console.error(error);
 	}	
 	console.log("Received github push payload");
 	res.status(200).send("Yeet");
