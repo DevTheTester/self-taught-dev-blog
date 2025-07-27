@@ -13,8 +13,6 @@ const MarkdownIt = require('markdown-it');
 const md = new MarkdownIt();
 const { verifySignature } = require('./utils/verifySignature');
 
-//Test
-
 //Initializes an app object using express class
 const app = express();
 
@@ -65,27 +63,35 @@ function requireLogin(req, res, next) {
 
 const SECRET = process.env.WEBHOOK_SECRET;
 //Webhook Handler for deployments
-app.post('/deploy-4f93jd92hf', express.json({type: 'application/json'}), async (req, res) => {
-	//Verify the webhook is from github
-	try {
-		const secret = process.env.WEBHOOK_SECRET;
-		const signature = req.get('x-hub-signature-256');
-		const payload = req.body;
+app.post('/webhook', express.json({type: 'application/json'}), async (req, res) => {
 
-		const valid = await verifySignature(secret, signature, payload);
+	const githubEvent = req.headers['x-github-event'];
+	const header = req.headers['x-hub-signature-256'];
+	const payload = req.body;
 
-		//Testing = test in prod
-		if (!valid) {
-			console.log("This shit was not valid at all");
+	if (githubEvent === 'ping') {
+		console.log("Received github ping payload");
+		const isFromGithub = await verifySignature(SECRET, header, payload);
+		console.log("If the thing is from github is: ");
+		console.log(isFromGithub);
+		//Give the whole headers object to this function, 
+		if (isFromGithub) {
+			console.log('yep that shits from github')
+			res.status(200).send("Yeet");
 		} else {
-			console.log("This shit is so valid bro");
+			console.log('failed to verify the big load');
+			res.status(401).send("Get that shit outta here");
 		}
-	// If there's an unexpected error then show it
-	} catch (e) {
-		console.error(e);
-	}	
-	console.log("Received github push payload");
-	res.status(200).send("Yeet");
+	} else if (githubEvent === 'push') {
+		console.log("Received github push payload");
+		if (verifySignature(SECRET, header, req.body)) {
+			console.log('yep that shits from github')
+			res.status(200).send("Yeet");
+		} else {
+			console.log('failed to verify the big load');
+			res.status(401).send("Get that shit outta here");
+		}
+	}
 });
 
 //Index
