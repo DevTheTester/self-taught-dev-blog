@@ -12,6 +12,9 @@ const {v4: uuidv4} = require('uuid');
 const MarkdownIt = require('markdown-it');
 const md = new MarkdownIt();
 const { verifySignature } = require('./utils/verifySignature');
+const smeeClient = require('smee-client');
+const crypto = require('crypto');
+const shell = require('shelljs');
 
 //Initializes an app object using express class
 const app = express();
@@ -68,14 +71,17 @@ app.post('/webhook', express.json({type: 'application/json'}), async (req, res) 
 	const githubEvent = req.headers['x-github-event'];
 	const header = req.headers['x-hub-signature-256'];
 	const payload = req.body;
+	console.log("Something is happening");
+	//Failing HERE, I'm just passing in the straight up SECRET. INSTEAD OF GETTING THE HASH AND COMPARING THE HASHES OH MY LORD
+	const isFromGithub = await verifySignature(SECRET, header, payload);
+	console.log("If the thing is from github is: ");
+	console.log(isFromGithub);
+	console.log("The type is");
+	console.log(typeof isFromGithub);
 
 	if (githubEvent === 'ping') {
-		console.log("Received github ping payload");
-		const isFromGithub = await verifySignature(SECRET, header, payload);
-		console.log("If the thing is from github is: ");
-		console.log(isFromGithub);
-		//Give the whole headers object to this function, 
-		if (isFromGithub) {
+		console.log('Received ping event');
+		if (isFromGithub != 'false') {
 			console.log('yep that shits from github')
 			res.status(200).send("Yeet");
 		} else {
@@ -84,8 +90,13 @@ app.post('/webhook', express.json({type: 'application/json'}), async (req, res) 
 		}
 	} else if (githubEvent === 'push') {
 		console.log("Received github push payload");
-		if (verifySignature(SECRET, header, req.body)) {
-			console.log('yep that shits from github')
+		if (isFromGithub) {
+			console.log('Verified as from github');
+			console.log(shell.ls());
+			shell.cd('scripts/');
+			console.log(shell.ls());
+			shell.exec('./deploy.sh');
+
 			res.status(200).send("Yeet");
 		} else {
 			console.log('failed to verify the big load');
@@ -93,6 +104,14 @@ app.post('/webhook', express.json({type: 'application/json'}), async (req, res) 
 		}
 	}
 });
+//For testing webhooks
+const smee = new smeeClient({
+	source: "https://smee.io/brVbIel4vOdDMn", // Change whenever you open a new channel
+	target: "http://localhost:3000/webhook",
+	logger: console 
+});
+
+const events = smee.start();
 
 //Index
 app.get('/', (req, res) => {

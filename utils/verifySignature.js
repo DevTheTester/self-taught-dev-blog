@@ -2,44 +2,36 @@ let encoder = new TextEncoder();
 
 async function verifySignature(secret, header, payload) {
 
-	console.log('secret is');
-    console.log(secret);
-	console.log('header is');
-    console.log(header);
-	console.log('payload is');
-    console.log(payload);
-    let parts = header.split("=");
-    let sigHex = parts[1];
-	console.log('Parts is: ');
-	console.log(parts);
-	console.log('sigHex is: ');
-	console.log(sigHex);
+	//Log all of the arguements that got passed in
+    let parts = header.split("="); //Splits the payload header 
+    let sigHex = parts[1]; //Gets the signature part of the header
 
+	//Define algorithm
     let algorithm = { name: "HMAC", hash: { name: 'SHA-256' } };
 
-    let keyBytes = encoder.encode(secret);
-    let extractable = false;
-	//Error hereing here says something about a 0 length key 
+    let keyBytes = encoder.encode(secret); // Turns the passed secret into an array of utf-8 numbers
+    let extractable = false; // Not sure what this does???
+
+	// Takes a key in the raw format 
     let key = await crypto.subtle.importKey(
         "raw",
-        keyBytes,
-        algorithm,
-        extractable,
-        [ "sign", "verify" ],
+        keyBytes, // Key bytes are in an array of numbers 
+        algorithm, // algorithm must be correct
+        extractable, // This just means I can't export the key?? idk what that's for
+        [ "sign", "verify" ], // Specifies that the key can be used to sign messages and to verify a signautre 
     );
 
-    let sigBytes = hexToBytes(sigHex);
-    let dataBytes = encoder.encode(payload);
-    let equal = await crypto.subtle.verify(
+    let sigBytes = hexToBytes(sigHex); // Turns the signature from being in hexcode into being into bytes
+	payload_string = JSON.stringify(payload);
+    let dataBytes = encoder.encode(payload_string); // The bytes from the payload this looks right 
+		// console.log(`I think this is supposed to be the bytes from the payload, it's: ${dataBytes}`) // This is where it's going wrong. This is coming back with nothing I think it's because payload is a json object instead of being converted to whatever encoder.encode expects it as? 
+
+    let equal = await crypto.subtle.verify( 
         algorithm.name,
         key,
         sigBytes,
         dataBytes,
     );
-	
-	console.log('Value of the comparing of the two secretey hashey hash browns is: ');
-	console.log(equal);
-
     return equal;
 }
 
