@@ -12,7 +12,6 @@ const {v4: uuidv4} = require('uuid');
 const MarkdownIt = require('markdown-it');
 const md = new MarkdownIt();
 const { verifySignature } = require('./utils/verifySignature');
-const smeeClient = require('smee-client');
 const crypto = require('crypto');
 const shell = require('shelljs');
 
@@ -104,14 +103,6 @@ app.post('/webhook', express.json({type: 'application/json'}), async (req, res) 
 		}
 	}
 });
-//For testing webhooks
-const smee = new smeeClient({
-	source: "https://smee.io/brVbIel4vOdDMn", // Change whenever you open a new channel
-	target: "http://localhost:3000/webhook",
-	logger: console 
-});
-
-const events = smee.start();
 
 //Index
 app.get('/', (req, res) => {
@@ -123,6 +114,7 @@ app.get('/about', (req, res) => {
 	res.render('about'); 
 });
 
+/*
 //Register
 app.get('/register', (req, res) => {
 	res.render('register');
@@ -147,6 +139,8 @@ app.post('/register', (req, res) => {
 		}
 	);
 });
+
+*/
 
 //Login
 app.get('/admin', (req, res) => {
