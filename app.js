@@ -109,11 +109,6 @@ app.get('/', (req, res) => {
 	res.render('index'); 
 });
 
-//About
-app.get('/about', (req, res) => {
-	res.render('about'); 
-});
-
 /*
 //Register
 app.get('/register', (req, res) => {
