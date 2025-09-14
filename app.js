@@ -193,14 +193,15 @@ app.get('/blog', (req, res) => {
 
 //Blog: Index>Post
 app.post('/blog', (req, res) => {
-	const { title, content } = req.body;
+	const { title, content, tags } = req.body;
 
 	const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 	const createdAt = new Date().toISOString();
-
+	
+	console.log(tags);
 	db.run(
-		`INSERT INTO posts (title, content, slug, createdAt) VALUES (?, ?, ?, ?)`,
-		[title, content, slug, createdAt],
+		`INSERT INTO posts (title, content, slug, createdAt, tags) VALUES (?, ?, ?, ?, ?)`,
+		[title, content, slug, createdAt, tags],
 		function (err) {
 			if (err) {
 				console.error(err);
@@ -246,6 +247,34 @@ app.post('/blog/:id/delete', requireLogin, (req, res) => {
 		res.redirect('/blog');
 	});
 });
+
+//Blog: Index 
+app.get('/tech-square', (req, res) => {
+	db.all(`SELECT * FROM posts ORDER BY createdAt DESC`, [], (err, rows) => {
+		if (err) {
+			console.error(err);
+			return res.status(500).send('Something went wrong.');
+		}
+		res.render('techIndex', { posts: rows });
+	});
+});
+
+
+//Tech: Posts 
+app.get('/techpost/:id', (req, res) => {
+	db.get(`SELECT * FROM posts WHERE id = ? ORDER BY CreatedAt DESC`, [req.params.id], (err, row) => {
+		if (err) {
+			res.status(500).send('Something went wrong');
+		} 
+		if (row) {
+			const htmlContent = md.render(row.content);
+			res.render('post', { post: row ,content: htmlContent});
+		} else {
+			res.status(404).send(`Post not found`);
+		}
+	});
+});
+
 
 app.listen(port, () => {
 	console.log(`Server listening on port ${port}`);

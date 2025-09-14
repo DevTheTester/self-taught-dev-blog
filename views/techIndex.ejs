@@ -1,0 +1,10 @@
+<h1>Technology Square</h1>
+<ul> 
+		<% posts.forEach(post => { %>
+			<% if (post.tags == "tech") { %>
+				<li>
+					<h2><a href='/techpost/<%= post.id %>'<a/> <%= post.title %></h2>
+				</li>
+			<% }; %>
+		<% }) %>
+</ul>

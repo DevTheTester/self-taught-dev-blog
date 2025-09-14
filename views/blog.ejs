@@ -1,11 +1,13 @@
-<h1>Self Taught Blog</h1>
+<h1>Shower Thought Alley</h1>
 <% if (user) { %>
 <h3><a href='blog/new'<a/>New Post</h3>
 <% }; %>
 <ul> 
 		<% posts.forEach(post => { %>
-		<li>
-			<h2><a href='/blog/<%= post.id %>'<a/> <%= post.title %></h2>
-		</li>
+			<% if (post.tags == "blog") { %>
+				<li>
+					<h2><a href='/blog/<%= post.id %>'<a/> <%= post.title %></h2>
+				</li>
+			<% }; %>
 		<% }) %>
 </ul>
