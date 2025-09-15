@@ -15,8 +15,12 @@ const { verifySignature } = require('./utils/verifySignature');
 const crypto = require('crypto');
 const shell = require('shelljs');
 
+
 //Initializes an app object using express class
 const app = express();
+
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 //Initialize db
 const db = new sqlite3.Database('./db/blog.db');
