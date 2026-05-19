@@ -279,6 +279,10 @@ app.get('/techpost/:id', (req, res) => {
 	});
 });
 
+app.get('/guild', (req, res) => {
+	res.render('guild');
+})
+
 
 app.listen(port, () => {
 	console.log(`Server listening on port ${port}`);
